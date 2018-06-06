@@ -1,39 +1,48 @@
 <template>
-  <div class="em-mock-expand">
-    <h2>Method</h2>
-    <p>{{mock.method}}</p>
-    <h2>URL</h2>
-    <p>{{mock.url}}</p>
-    <h2>{{$t('p.detail.expand.description')}}</h2>
-    <p>{{mock.description}}</p>
-    <Tabs value="request" v-if="mock.parameters || mock.response_model">
-      <Tab-pane :label="$t('p.detail.expand.tab[0]')" name="request" v-if="mock.parameters">
-        <Table :columns="columnsRequest" :data="request"></Table>
-      </Tab-pane>
-      <Tab-pane :label="$t('p.detail.expand.tab[1]')" name="response" v-if="mock.response_model">
-        <Table :columns="columnsResponse" :data="response"></Table>
-      </Tab-pane>
-      <Tab-pane label="Class Model" name="class" v-if="mock.response_model && entities.js.length">
-        <Collapse>
-          <Panel>
-            JavaScript
-            <div slot="content">
-              <p v-for="(item, i) in entities.js" :key="i">
-                <pre>{{item}}</pre>
-              </p>
-            </div>
-          </Panel>
-          <Panel>
-            Objective-C
-            <div slot="content">
-              <p v-for="(item, i) in entities.oc" :key="i">
-                <pre>{{item}}</pre>
-              </p>
-            </div>
-          </Panel>
-        </Collapse>
-      </Tab-pane>
-    </Tabs>
+  <div>
+    <div class="em-mock-expand">
+      <h2>Method</h2>
+      <p>{{mock.method}}</p>
+      <h2>URL</h2>
+      <p>{{mock.url}}</p>
+      <h2>{{$t('p.detail.expand.description')}}</h2>
+      <p>{{mock.description}}</p>
+      <Tabs value="request" v-if="mock.parameters || mock.response_model">
+        <Tab-pane :label="$t('p.detail.expand.tab[0]')" name="request" v-if="mock.parameters">
+          <Table :columns="columnsRequest" :data="request"></Table>
+        </Tab-pane>
+        <Tab-pane :label="$t('p.detail.expand.tab[1]')" name="response" v-if="mock.response_model">
+          <Table :columns="columnsResponse" :data="response"></Table>
+        </Tab-pane>
+        <Tab-pane label="Class Model" name="class" v-if="mock.response_model && entities.js.length">
+          <Collapse>
+            <Panel>
+              JavaScript
+              <div slot="content">
+                <p v-for="(item, i) in entities.js" :key="i">
+                  <pre>{{item}}</pre>
+                </p>
+              </div>
+            </Panel>
+            <Panel>
+              Objective-C
+              <div slot="content">
+                <p v-for="(item, i) in entities.oc" :key="i">
+                  <pre>{{item}}</pre>
+                </p>
+              </div>
+            </Panel>
+          </Collapse>
+        </Tab-pane>
+      </Tabs>
+    </div>
+    <div class="em-mock-expand">
+      <h2>参数</h2>
+      <p v-for="param in mock.params" :key="param" v-if="param">
+        <Tag color="blue" @click.native="copyToClipboard(param.split(':')[0])">{{param.split(':')[0]}}</Tag>
+        <Tag color="yellow">{{param.split(':')[1]}}</Tag>
+      </p>      
+    </div>
   </div>
 </template>
 
@@ -115,6 +124,16 @@ export default {
       if (schema && schema.type) {
         return schema.type === 'array' ? schema.items.type : schema.type
       }
+    },
+    copyToClipboard (str) {
+      let save = function (e) {
+        e.clipboardData.setData('text/plain', str)
+        e.preventDefault()
+      }
+      document.addEventListener('copy', save)
+      document.execCommand('copy')
+      document.removeEventListener('copy', save)
+      this.$Message.success('已复制到剪贴板')
     }
   }
 }

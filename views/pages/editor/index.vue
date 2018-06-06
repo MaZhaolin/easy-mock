@@ -19,6 +19,13 @@
                 <span slot="prepend">/</span>
               </i-input>
             </Form-item>
+            <Form-item>
+              <template slot="label">
+                请求参数
+              <i-button @click="addParams" type="primary" shape="circle" icon="plus" size="small" style="margin-left: 10px"></i-button>
+              </template>
+              <i-input v-for="i in temp.params.length" :key="i" v-model="temp.params[i - 1]" placeholder="name:String" style="margin-bottom: 10px"></i-input>
+            </Form-item>
             <Form-item :label="$t('p.detail.columns[0]')">
               <i-input v-model="temp.description"></i-input>
             </Form-item>
@@ -77,8 +84,11 @@ export default {
       ],
       temp: {
         url: '',
-        mode: '{"data": {}}',
+        mode: '{"code": 200, "data": {}, "msg": ""}',
         method: 'get',
+        params: [
+          ''
+        ],
         description: ''
       }
     }
@@ -131,6 +141,7 @@ export default {
       this.temp.mode = this.mockData.mode
       this.temp.method = this.mockData.method
       this.temp.description = this.mockData.description
+      this.temp.params = this.mockData.params
     }
 
     this.codeEditor.setValue(this.temp.mode)
@@ -142,6 +153,9 @@ export default {
       return newUrl === '/'
         ? '/'
         : newUrl.replace(/\/\//g, '/').replace(/\/$/, '')
+    },
+    addParams () {
+      this.temp.params.push('')
     },
     format () {
       const context = this.codeEditor.getValue()
@@ -158,8 +172,8 @@ export default {
       this.$router.replace(`/project/${this.projectId}`)
     },
     submit () {
+      console.log(this.temp.params)
       const mockUrl = this.convertUrl(this.temp.url)
-
       try {
         const value = (new Function(`return ${this.temp.mode}`))() // eslint-disable-line
         if (!value) {

@@ -236,7 +236,7 @@ export default {
     clip (mockUrl) {
       const clipboard = new Clipboard('.copy-url', {
         text: () => {
-          return this.baseUrl + mockUrl
+          return mockUrl
         }
       })
       clipboard.on('success', (e) => {
@@ -246,7 +246,9 @@ export default {
       })
     },
     preview (mock) {
-      window.open(this.baseUrl + mock.url + '#!method=' + mock.method)
+      let str = mock.params.map(v => v.split(':')[0]).join('=&')
+      console.log(str)
+      window.open(this.baseUrl + mock.url + '?' + str + '#!method=' + mock.method)
     },
     selectionChange (selection) {
       this.selection = selection
