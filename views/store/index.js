@@ -5,6 +5,7 @@ import { version } from '../../package.json'
 import user from './modules/user'
 import app from './modules/app'
 import mock from './modules/mock'
+import mockGroup from './modules/mockGroup'
 import group from './modules/group'
 import project from './modules/project'
 import dashboard from './modules/dashboard'
@@ -34,6 +35,19 @@ export function createStore () {
           }
         },
         ...mock
+      },
+      mockGroup: {
+        state: {
+          list: [],
+          project: {},
+          keywords: '',
+          pageIndex: 1,
+          editorData: {
+            mock: null,
+            baseUrl: ''
+          }
+        },
+        ...mockGroup
       },
       user: {
         state: {

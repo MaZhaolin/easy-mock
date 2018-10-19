@@ -18,7 +18,7 @@
         class="em-container"
         v-if="pageAnimated && pageName === $t('p.detail.nav[0]')"
         key="b">
-        <div class="em-proj-detail__info">
+        <!-- <div class="em-proj-detail__info">
           <Row>
             <Col span="19">
               <em-spots :size="6"></em-spots>
@@ -39,26 +39,8 @@
               </div>
             </Col>
           </Row>
-        </div>
-        <div class="em-proj-detail__switcher">
-          <ul>
-            <li @click="openEditor()" v-shortkey="['ctrl', 'n']" @shortkey="openEditor()">
-              <Icon type="plus-round"></Icon> {{$t('p.detail.create.action')}}
-            </li>
-            <li @click="handleWorkbench" v-shortkey="['ctrl', 'w']" @shortkey="handleWorkbench">
-              <transition name="zoom" mode="out-in">
-                <Icon :type="project.extend.is_workbench ? 'android-star' : 'android-star-outline'"
-                  :key="project.extend.is_workbench"></Icon>
-              </transition>
-              {{$t('p.detail.workbench')}}
-            </li>
-            <li @click="updateBySwagger" v-shortkey="['ctrl', 's']" @shortkey="updateBySwagger">
-              <Icon type="loop"></Icon> {{$t('p.detail.syncSwagger.action')}}
-            </li>
-            <li @click="download"><Icon type="code-download"></Icon> {{$tc('p.detail.download', 1)}}</li>
-          </ul>
-        </div>
-        <div class="em-proj-detail__members" v-if="project.members.length">
+        </div> -->
+        <!-- <div class="em-proj-detail__members" v-if="project.members.length">
           <em-spots :size="6"></em-spots>
           <h2><Icon type="person-stalker"></Icon> {{$t('p.detail.member')}}</h2>
           <Row :gutter="20">
@@ -66,13 +48,33 @@
               <img :src="item.head_img" :title="item.nick_name"/>
             </Col>
           </Row>
+        </div> -->
+        <div style="display: inline-block;vertical-align: top;margin-top: 20px;">
+          <div style="margin-bottom: 10px">
+            <Input v-model="temp.name" placeholder="分组名" style="width: 184px"/>
+            <Button type="primary" @click="addMockGroup">增加</Button>
+          </div>
+          <Menu :active-name="activeGroup" @on-select="onGroupChange">
+            <MenuGroup title="接口分组">
+              <MenuItem v-for="(item, index) in groups" :key="index" :name="item._id">{{item.name}}</MenuItem>
+            </MenuGroup>
+          </Menu>
         </div>
-        <Table
-          border
-          :columns="columns"
-          :data="list"
-          @on-selection-change="selectionChange"
-          :highlight-row="true"></Table>
+        <div style="width: 729px;display:inline-block;margin-left: 10px;margin-top: 20px;">
+          <div class="em-proj-detail__switcher">
+            <ul>
+              <li @click="openEditor()" v-shortkey="['ctrl', 'n']" @shortkey="openEditor()">
+                <Icon type="plus-round"></Icon> {{$t('p.detail.create.action')}}
+              </li>
+            </ul>
+          </div>
+          <Table
+            border
+            :columns="columns"
+            :data="list"
+            @on-selection-change="selectionChange"
+            :highlight-row="true"></Table>
+        </div>
       </div>
     </transition>
   </div>
@@ -160,7 +162,7 @@ export default {
             </tag>
           }
         },
-        { title: 'URL', width: 420, ellipsis: true, sortable: true, key: 'url' },
+        { title: 'URL', width: 220, ellipsis: true, sortable: true, key: 'url' },
         { title: this.$t('p.detail.columns[0]'), ellipsis: true, key: 'description' },
         {
           title: this.$t('p.detail.columns[1]'),
@@ -187,21 +189,38 @@ export default {
             )
           }
         }
-      ]
+      ],
+      temp: {
+        name: '',
+        description: 'desc'
+      },
+      activeGroup: ''
     }
   },
   asyncData ({ store, route }) {
     store.commit('mock/INIT_REQUEST')
-    return store.dispatch('mock/FETCH', route)
+    // store.commit('mockGroup/INIT_REQUEST')
+    route.params.groupId ? store.dispatch('mock/FETCH', route.params.groupId) : store.commit('mockGroup/INIT_REQUEST')
+    return store.dispatch('mockGroup/FETCH', route)
   },
   mounted () {
+    const list = this.$store.state.mockGroup.list
+    this.activeGroup = this.$route.params.groupId
+    if (list.length > 0 && !this.activeGroup) {
+      this.activeGroup = list[0]._id
+      this.$store.dispatch('mock/FETCH', this.activeGroup)
+    }
     this.$on('query', debounce((keywords) => {
       this.keywords = keywords
     }, 500))
   },
   computed: {
     project () {
-      return this.$store.state.mock.project
+      return this.$store.state.mockGroup.project
+    },
+    groups () {
+      const list = this.$store.state.mockGroup.list
+      return list
     },
     list () {
       const list = this.$store.state.mock.list
@@ -228,6 +247,32 @@ export default {
     }
   },
   methods: {
+    addMockGroup () {
+      api.mockGroup.create({
+        data: {
+          ...this.temp,
+          project_id: this.project._id
+        }
+      }).then((res) => {
+        if (res.data.success) {
+          this.$Message.success('分组创建成功')
+          this.temp.name = ''
+          this.$store.dispatch('mockGroup/FETCH', this.$route)
+          this.close()
+        }
+      })
+    },
+    onGroupChange (name) {
+      this.$router.push({
+        name: 'project',
+        params: {
+          id: this.project._id,
+          groupId: name
+        }
+      })
+      this.activeGroup = name
+      // this.$store.dispatch('mock/FETCH', name)
+    },
     handleKeyTab () {
       this.pageName = this.pageName === this.$t('p.detail.nav[1]')
         ? this.$t('p.detail.nav[0]')
@@ -247,7 +292,6 @@ export default {
     },
     preview (mock) {
       let str = mock.params.map(v => v.split(':')[0]).join('=&')
-      console.log(str)
       window.open(this.baseUrl + mock.url + '?' + str + '#!method=' + mock.method)
     },
     selectionChange (selection) {
@@ -322,9 +366,9 @@ export default {
     openEditor (mock) {
       if (mock) {
         this.$store.commit('mock/SET_EDITOR_DATA', {mock, baseUrl: this.baseUrl})
-        this.$router.push(`/editor/${this.project._id}/${mock._id}`)
+        this.$router.push(`/editor/${this.project._id}/${this.activeGroup}/${mock._id}`)
       } else {
-        this.$router.push(`/editor/${this.project._id}`)
+        this.$router.push(`/editor/${this.project._id}/${this.activeGroup}`)
       }
     }
   },

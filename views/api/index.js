@@ -164,6 +164,14 @@ const mock = {
   export: config => createExportForm('/api/mock/export', config)
 }
 
+const mockGroup = {
+  getList: config => createAPI('/mockGroup', 'get', config),
+  create: config => createAPI('/mockGroup/create', 'post', config),
+  update: config => createAPI('/mockGroup/update', 'post', config),
+  delete: config => createAPI('/mockGroup/delete', 'post', config),
+  export: config => createExportForm('/api/mockGroup/export', config)
+}
+
 const group = {
   getList: config => createAPI('/group', 'get', config),
   join: config => createAPI('/group/join', 'post', config),
@@ -180,6 +188,7 @@ export {
   u,
   project,
   mock,
+  mockGroup,
   util,
   group,
   dashboard,

@@ -11,41 +11,41 @@ const pathToRegexp = require('path-to-regexp')
 
 const util = require('../util')
 const ft = require('../models/fields_table')
-const { MockProxy, ProjectProxy, UserGroupProxy, MockGroupProxy } = require('../proxy')
+const { ProjectProxy, UserGroupProxy, MockGroupProxy } = require('../proxy')
 
 const redis = util.getRedis()
 const defPageSize = config.get('pageSize')
 
 async function checkByMockId (mockId, uid) {
-  const api = await MockProxy.getById(mockId)
+  const api = await MockGroupProxy.getById(mockId)
 
   if (!api) return '接口不存在'
 
-  const project = await checkByGroupId(api.group.id, uid)
+  const project = await checkByProjectId(api.project.id, uid)
 
   if (typeof project === 'string') return project
   return { api, project }
 }
 
-async function checkByGroupId (groupId, uid) {
-  const project = await MockGroupProxy.findOne({ _id: groupId })
+async function checkByProjectId (projectId, uid) {
+  const project = await ProjectProxy.findOne({ _id: projectId })
 
   if (project) {
-    // const group = project.group
-    // if (group) {
-    //   const userGroup = await UserGroupProxy.findOne({ user: uid, group: group })
-    //   if (!userGroup) return '无权限操作'
-    // } else if (project.user.id !== uid) {
-    //   /* istanbul ignore else */
-    //   if (!_.find(project.members, ['id', uid])) return '无权限操作'
-    // }
+    const group = project.group
+    if (group) {
+      const userGroup = await UserGroupProxy.findOne({ user: uid, group: group })
+      if (!userGroup) return '无权限操作'
+    } else if (project.user.id !== uid) {
+      /* istanbul ignore else */
+      if (!_.find(project.members, ['id', uid])) return '无权限操作'
+    }
     return project
   }
 
   return '项目不存在'
 }
 
-module.exports = class MockController {
+module.exports = class MockGroupController {
   /**
    * 创建接口
    * @param Object ctx
@@ -53,46 +53,39 @@ module.exports = class MockController {
 
   static async create (ctx) {
     const uid = ctx.state.user.id
-    const mode = ctx.checkBody('mode').notEmpty().value
-    const params = ctx.checkBody('params').notEmpty().value
-    const groupId = ctx.checkBody('group_id').notEmpty().value
+    const projectId = ctx.checkBody('project_id').notEmpty().value
     const description = ctx.checkBody('description').notEmpty().value
-    const url = ctx.checkBody('url').notEmpty().match(/^\/.*$/i, 'URL 必须以 / 开头').value
-    const method = ctx.checkBody('method').notEmpty().toLow().in(['get', 'post', 'put', 'delete', 'patch']).value
+    const name = ctx.checkBody('name').notEmpty().value
 
     if (ctx.errors) {
       ctx.body = ctx.util.refail(null, 10001, ctx.errors)
       return
     }
 
-    const project = await checkByGroupId(groupId, uid)
+    const project = await checkByProjectId(projectId, uid)
 
     if (typeof project === 'string') {
       ctx.body = ctx.util.refail(project)
       return
     }
 
-    const api = await MockProxy.findOne({
-      project: groupId,
-      url,
-      method
+    const api = await MockGroupProxy.findOne({
+      project: projectId,
+      name
     })
 
     if (api) {
-      ctx.body = ctx.util.refail('请检查接口是否已经存在')
+      ctx.body = ctx.util.refail('请检查分组是否已经存在')
       return
     }
 
-    await MockProxy.newAndSave({
-      group: groupId,
+    await MockGroupProxy.newAndSave({
+      project: projectId,
       description,
-      method,
-      url,
-      params,
-      mode
+      name
     })
 
-    await redis.del('group:' + groupId)
+    await redis.del('project:' + projectId)
     ctx.body = ctx.util.resuccess()
   }
 
@@ -103,8 +96,8 @@ module.exports = class MockController {
 
   static async list (ctx) {
     const uid = ctx.state.user.id
-    const keywords = ctx.query.keywords
-    const groupId = ctx.checkQuery('group_id').notEmpty().value
+    // const keywords = ctx.query.keywords
+    const projectId = ctx.checkQuery('project_id').notEmpty().value
     const pageSize = ctx.checkQuery('page_size').empty().toInt().gt(0).default(defPageSize).value
     const pageIndex = ctx.checkQuery('page_index').empty().toInt().gt(0).default(1).value
 
@@ -119,23 +112,23 @@ module.exports = class MockController {
       sort: '-create_at'
     }
 
-    const where = { group: groupId }
+    const where = { project: projectId }
 
-    if (keywords) {
-      const keyExp = new RegExp(keywords)
-      where.$or = [{
-        url: keyExp
-      }, {
-        description: keyExp
-      }, {
-        method: keyExp
-      }, {
-        mode: keyExp
-      }]
-    }
+    // if (keywords) {
+    //   const keyExp = new RegExp(keywords)
+    //   where.$or = [{
+    //     url: keyExp
+    //   }, {
+    //     description: keyExp
+    //   }, {
+    //     method: keyExp
+    //   }, {
+    //     mode: keyExp
+    //   }]
+    // }
 
-    let mocks = await MockProxy.find(where, opt)
-    let project = await ProjectProxy.getById(uid, groupId)
+    let mockGroups = await MockGroupProxy.find(where, opt)
+    let project = await ProjectProxy.getById(uid, projectId)
 
     /* istanbul ignore else */
     if (project) {
@@ -146,9 +139,9 @@ module.exports = class MockController {
       project = _.pick(project, ['user'].concat(ft.project))
     }
 
-    mocks = mocks.map(o => _.pick(o, ft.mock))
+    mockGroups = mockGroups.map(o => _.pick(o, ft.mockGroup))
 
-    ctx.body = ctx.util.resuccess({ project: project || {}, mocks })
+    ctx.body = ctx.util.resuccess({ project: project || {}, mockGroups })
   }
 
   /**
@@ -185,7 +178,7 @@ module.exports = class MockController {
     api.description = description
     api.params = params
 
-    const existMock = await MockProxy.findOne({
+    const existMock = await MockGroupProxy.findOne({
       _id: { $ne: api.id },
       project: project.id,
       url: api.url,
@@ -197,7 +190,7 @@ module.exports = class MockController {
       return
     }
 
-    await MockProxy.updateById(api)
+    await MockGroupProxy.updateById(api)
     await redis.del('project:' + project.id)
     ctx.body = ctx.util.resuccess()
   }
@@ -220,7 +213,7 @@ module.exports = class MockController {
     if (apis) {
       apis = JSON.parse(apis)
     } else {
-      apis = await MockProxy.find({ project: projectId })
+      apis = await MockGroupProxy.find({ project: projectId })
       if (apis[0]) await redis.set(redisKey, JSON.stringify(apis), 'EX', 60 * 30)
     }
 
@@ -323,7 +316,7 @@ module.exports = class MockController {
 
     projectIds = projectIds.split(',')
 
-    const apis = await MockProxy.find({
+    const apis = await MockGroupProxy.find({
       project: {
         $in: projectIds
       }
@@ -369,9 +362,9 @@ module.exports = class MockController {
     }
 
     if (projectId) {
-      apis = await MockProxy.find({ project: projectId })
+      apis = await MockGroupProxy.find({ project: projectId })
     } else if (!_.isEmpty(ids)) {
-      apis = await MockProxy.find({
+      apis = await MockGroupProxy.find({
         _id: {
           $in: ids
         }
@@ -418,14 +411,14 @@ module.exports = class MockController {
       return
     }
 
-    await MockProxy.find({
+    await MockGroupProxy.find({
       _id: {
         $in: ids
       },
       project: projectId
     })
 
-    await MockProxy.delByIds(ids)
+    await MockGroupProxy.delByIds(ids)
     await redis.del('project:' + projectId)
     ctx.body = ctx.util.resuccess()
   }

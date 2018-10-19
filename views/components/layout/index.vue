@@ -1,6 +1,6 @@
 <template>
   <div class="em-layout">
-    <em-add @click.native="$router.push('/new')"></em-add>
+    <em-add @click.native="onAdd"></em-add>
     <div v-shortkey="['p']" @shortkey="$router.push('/')"></div>
     <div v-shortkey="['g']" @shortkey="$router.push('/group')"></div>
     <div v-shortkey="['w']" @shortkey="$router.push('/workbench')"></div>
@@ -152,6 +152,14 @@ export default {
     },
     onSearch () {
       this.$refs.search.focus()
+    },
+    onAdd () {
+      this.$router.push('/new')
+      // if (this.$route.name === 'project') {
+      //   this.$router.push({path: '/editor/' + this.$route.params.id})
+      // } else {
+      //   this.$router.push('/new')
+      // }
     }
   }
 }

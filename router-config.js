@@ -7,6 +7,7 @@ const ratelimit = require('koa-ratelimit')
 const {
   user,
   mock,
+  mockGroup,
   util,
   group,
   project,
@@ -65,3 +66,10 @@ exports.api = apiRouter
   .post('/mock/update', mock.update)
   .post('/mock/delete', mock.delete)
   .post('/mock/export', mock.exportAPI)
+
+  .get('/mockGroup', mockGroup.list)
+  .get('/mockGroup/by_projects', mockGroup.getAPIByProjectIds)
+  .post('/mockGroup/create', mockGroup.create)
+  .post('/mockGroup/update', mockGroup.update)
+  .post('/mockGroup/delete', mockGroup.delete)
+  .post('/mockGroup/export', mock.exportAPI)

@@ -27,7 +27,7 @@
               <i-input v-for="i in temp.params.length" :key="i" v-model="temp.params[i - 1]" placeholder="name:String" style="margin-bottom: 10px"></i-input>
             </Form-item>
             <Form-item :label="$t('p.detail.columns[0]')">
-              <i-input v-model="temp.description"></i-input>
+              <i-input type="textarea" v-model="temp.description"></i-input>
             </Form-item>
             <Form-item :label="$t('p.detail.editor.autoClose')" v-if="isEdit">
               <i-switch v-model="autoClose"></i-switch>
@@ -103,6 +103,9 @@ export default {
     projectId () {
       return this.$route.params.projectId
     },
+    groupId () {
+      return this.$route.params.groupId
+    },
     isEdit () {
       return !!this.$route.params.id && this.mockData
     }
@@ -169,7 +172,7 @@ export default {
     },
     close () {
       this.$store.commit('mock/SET_EDITOR_DATA', {mock: null, baseUrl: ''})
-      this.$router.replace(`/project/${this.projectId}`)
+      this.$router.replace(`/project/${this.projectId}/${this.groupId}`)
     },
     submit () {
       console.log(this.temp.params)
@@ -207,7 +210,8 @@ export default {
           data: {
             ...this.temp,
             url: mockUrl,
-            project_id: this.projectId
+            project_id: this.projectId,
+            group_id: this.groupId
           }
         }).then((res) => {
           if (res.data.success) {

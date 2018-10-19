@@ -2,9 +2,11 @@
 
 @c proj-detail {
   padding-bottom: 20px;
-
   td .ivu-table-cell {
     font-size: 14px;
+  }
+  .ivu-table-wrapper {
+    margin-top: 20px
   }
 
   .method-tag {

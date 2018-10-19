@@ -8,15 +8,15 @@ module.exports = class MockProxy {
   }
 
   static getById (mockId) {
-    return Mock.findById(mockId).populate('project')
+    return Mock.findById(mockId).populate('group').populate('project')
   }
 
   static find (query, opt) {
-    return Mock.find(query, {}, opt).populate('project')
+    return Mock.find(query, {}, opt).populate('group').populate('project')
   }
 
   static findOne (query, opt) {
-    return Mock.findOne(query, {}, opt).populate('project')
+    return Mock.findOne(query, {}, opt).populate('group').populate('project')
   }
 
   static updateById (mock) {

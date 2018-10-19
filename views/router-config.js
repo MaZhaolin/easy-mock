@@ -34,9 +34,9 @@ export function createRouter () {
           { path: 'dashboard', component: dashboard },
           { path: 'profile', component: profile },
           { path: 'new', component: createProject },
-          { path: 'project/:id', component: detail },
-          { path: 'editor/:projectId', component: editor },
-          { path: 'editor/:projectId/:id', component: editor }
+          { name: 'project', path: 'project/:id/:groupId?', component: detail },
+          { path: 'editor/:projectId/:groupId', component: editor },
+          { path: 'editor/:projectId/:groupId/:id', component: editor }
         ]
       }
     ]

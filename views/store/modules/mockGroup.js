@@ -5,8 +5,8 @@ export default {
   mutations: {
     SET_VALUE (state, payload) {
       state.list = state.pageIndex === 1
-        ? payload.mocks
-        : state.list.concat(payload.mocks)
+        ? payload.mockGroups
+        : state.list.concat(payload.mockGroups)
       state.project = payload.project
     },
     INIT_REQUEST (state) {
@@ -25,10 +25,10 @@ export default {
     }
   },
   actions: {
-    FETCH ({commit, state, rootState}, groupId) {
-      return api.mock.getList({
+    FETCH ({commit, state, rootState}, route) {
+      return api.mockGroup.getList({
         params: {
-          group_id: groupId,
+          project_id: route.params.id,
           page_size: 2000, // 不考虑接口分页
           page_index: state.pageIndex,
           keywords: state.keywords
@@ -42,12 +42,10 @@ export default {
         }
       })
     },
-    CREATE ({commit, dispatch}, {route, mode, description, url, method}) {
-      return api.mock.create({
+    CREATE ({commit, dispatch}, {route, description, name}) {
+      return api.mockGroup.create({
         data: {
-          mode,
-          url,
-          method,
+          name,
           description,
           project_id: route.params.id
         }

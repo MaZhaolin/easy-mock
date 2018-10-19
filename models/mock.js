@@ -9,6 +9,10 @@ const schema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Project'
   },
+  group: {
+    type: Schema.Types.ObjectId,
+    ref: 'mock_group'
+  },
   description: String,
   mode: String,
   url: String,
@@ -22,6 +26,6 @@ const schema = new Schema({
   }
 })
 
-schema.index({ project: 1, create_at: -1 })
+schema.index({ project: 1, group: 1, create_at: -1 })
 
 module.exports = mongoose.model('Mock', schema)

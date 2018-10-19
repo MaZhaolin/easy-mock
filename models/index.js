@@ -18,6 +18,7 @@ mongoose.connect(config.get('db'), {
 module.exports = {
   User: require('./user'),
   Mock: require('./mock'),
+  MockGroup: require('./mock_group'),
   Group: require('./group'),
   Project: require('./project'),
   MockCount: require('./mock_count'),
