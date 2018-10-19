@@ -147,8 +147,10 @@ export default {
       this.temp.params = this.mockData.params
     }
 
-    this.codeEditor.setValue(this.temp.mode)
-    this.format()
+    this.$nextTick(() => {
+      this.codeEditor.setValue(this.temp.mode)
+      this.format()
+    })
   },
   methods: {
     convertUrl (url) {
