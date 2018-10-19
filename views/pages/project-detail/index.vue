@@ -60,7 +60,7 @@
             </MenuGroup>
           </Menu>
         </div>
-        <div style="width: 729px;display:inline-block;margin-left: 10px;margin-top: 20px;">
+        <div style="width: 909px;display:inline-block;margin-left: 10px;margin-top: 20px;">
           <div class="em-proj-detail__switcher">
             <ul>
               <li @click="openEditor()" v-shortkey="['ctrl', 'n']" @shortkey="openEditor()">
@@ -68,12 +68,16 @@
               </li>
             </ul>
           </div>
-          <Table
+          <div style="position: relative">
+            <Table
             border
             :columns="columns"
             :data="list"
             @on-selection-change="selectionChange"
-            :highlight-row="true"></Table>
+            :highlight-row="true">
+            </Table>
+            <Spin size="large" fix v-if="loading"></Spin>
+          </div>
         </div>
       </div>
     </transition>
@@ -134,7 +138,6 @@ export default {
             })
           }
         },
-        { type: 'selection', width: 60, align: 'center' },
         {
           title: 'Method',
           width: 110,
@@ -217,6 +220,9 @@ export default {
   computed: {
     project () {
       return this.$store.state.mockGroup.project
+    },
+    loading () {
+      return this.$store.state.mock.loading
     },
     groups () {
       const list = this.$store.state.mockGroup.list

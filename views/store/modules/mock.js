@@ -8,12 +8,14 @@ export default {
         ? payload.mocks
         : state.list.concat(payload.mocks)
       state.project = payload.project
+      state.loading = false
     },
     INIT_REQUEST (state) {
       state.keywords = ''
       state.pageIndex = 1
       state.project = {}
       state.list = []
+      state.loading = true
     },
     SET_REQUEST_PARAMS (state, payload) {
       state.keywords = payload.keywords || state.keywords
@@ -49,7 +51,8 @@ export default {
           url,
           method,
           description,
-          project_id: route.params.id
+          project_id: route.params.id,
+          group_id: route.params.groupId
         }
       }).then((res) => {
         if (res.data.success) {

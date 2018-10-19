@@ -56,6 +56,7 @@ module.exports = class MockController {
     const mode = ctx.checkBody('mode').notEmpty().value
     const params = ctx.checkBody('params').notEmpty().value
     const groupId = ctx.checkBody('group_id').notEmpty().value
+    const projectId = ctx.checkBody('project_id').notEmpty().value
     const description = ctx.checkBody('description').notEmpty().value
     const url = ctx.checkBody('url').notEmpty().match(/^\/.*$/i, 'URL 必须以 / 开头').value
     const method = ctx.checkBody('method').notEmpty().toLow().in(['get', 'post', 'put', 'delete', 'patch']).value
@@ -85,6 +86,7 @@ module.exports = class MockController {
 
     await MockProxy.newAndSave({
       group: groupId,
+      project: projectId,
       description,
       method,
       url,
@@ -370,7 +372,7 @@ module.exports = class MockController {
     }
 
     if (projectId) {
-      apis = await MockProxy.find({ project: projectId })
+      apis = await MockProxy.find({ mock_group: projectId })
     } else if (!_.isEmpty(ids)) {
       apis = await MockProxy.find({
         _id: {

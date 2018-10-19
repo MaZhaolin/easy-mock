@@ -25,6 +25,7 @@ export function createStore () {
       },
       mock: {
         state: {
+          loading: true,
           list: [],
           project: {},
           keywords: '',
