@@ -109,7 +109,7 @@ module.exports = class MockGroupController {
     const opt = {
       skip: (pageIndex - 1) * pageSize,
       limit: pageSize,
-      sort: '-create_at'
+      sort: 'create_at'
     }
 
     const where = { project: projectId }
