@@ -93,7 +93,7 @@
           <Form-item :class="{'em-new__form-hr': isEdit}">
             <Button type="primary" long @click="submit">{{isEdit ? $t('p.new.form.button.update') : $t('p.new.form.button.create')}}</Button>
           </Form-item>
-          <Form-item :label="$tc('p.new.form.confirm', 0)" v-if="isEdit">
+          <!-- <Form-item :label="$tc('p.new.form.confirm', 0)" v-if="isEdit">
             <i-input v-model="confirmName" :placeholder="$tc('p.new.form.confirm', 1)"></i-input>
             <p class="em-new__form-description">
             {{$tc('p.new.form.confirm', 2)}} <strong style="word-break:break-all;">
@@ -103,7 +103,7 @@
           </Form-item>
           <Form-item v-if="isEdit">
             <Button type="error" long @click="remove" :disabled="confirmName !== projectData.name">{{$t('p.new.form.button.delete')}}</Button>
-          </Form-item>
+          </Form-item> -->
         </Form>
       </div>
     </div>

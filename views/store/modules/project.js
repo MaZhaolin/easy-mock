@@ -1,9 +1,16 @@
 import * as api from '../../api'
+import _ from 'lodash'
 
 export default {
   namespaced: true,
   mutations: {
     SET_LIST (state, payload) {
+      payload = payload.filter(project => {
+        project.extend = {
+          is_workbench: _.isObject(project.group)
+        }
+        return _.isObject(project.group)
+      })
       state.list = state.pageIndex === 1
         ? payload
         : state.list.concat(payload)

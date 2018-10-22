@@ -49,7 +49,7 @@
               <Icon type="ios-book"></Icon> {{$t('c.layout.menu[3]')}}
             </Badge>
           </Menu-item>
-          <Submenu name="100">
+          <!-- <Submenu name="100">
             <template slot="title">
               <Icon type="egg"></Icon> {{$t('c.layout.menu[4][0]')}}
             </template>
@@ -68,7 +68,7 @@
               @click="open('http://mockjs.com/examples.html')">
               <Icon type="link"></Icon> {{$t('c.layout.menu[4][2]')}}
             </li>
-          </Submenu>
+          </Submenu> -->
           <Submenu name="5" class="nav-avatar" v-show="userHeadImg">
             <template slot="title">
               <img :src="userHeadImg" v-show="userHeadImg"/>

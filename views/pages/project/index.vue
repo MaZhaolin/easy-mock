@@ -114,6 +114,9 @@ export default {
     return store.dispatch('project/FETCH')
   },
   mounted () {
+    // this.$store.commit('project/INIT_REQUEST')
+    // this.$store.dispatch('project/INIT_PAGE', this.$route)
+    // this.$store.dispatch('project/FETCH')
     this.$on('query', debounce((keywords) => {
       this.$store.dispatch('project/QUERY', keywords)
     }, 500))
