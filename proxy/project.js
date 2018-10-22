@@ -56,6 +56,11 @@ module.exports = class ProjectProxy {
     })
   }
 
+  static async findAll (opt) {
+    const projects = await Project.find({}, {}, opt).populate('user members group')
+    return projects
+  }
+
   static updateById (project) {
     return Project.update({
       _id: project.id

@@ -11,7 +11,7 @@ const pathToRegexp = require('path-to-regexp')
 
 const util = require('../util')
 const ft = require('../models/fields_table')
-const { MockProxy, ProjectProxy, UserGroupProxy, MockGroupProxy } = require('../proxy')
+const { MockProxy, ProjectProxy, MockGroupProxy } = require('../proxy')
 
 const redis = util.getRedis()
 const defPageSize = config.get('pageSize')
@@ -405,7 +405,7 @@ module.exports = class MockController {
    */
 
   static async delete (ctx) {
-    const uid = ctx.state.user.id
+    // const uid = ctx.state.user.id
     const projectId = ctx.checkBody('project_id').notEmpty().value
     const ids = ctx.checkBody('ids').notEmpty().type('array').value
 
@@ -414,12 +414,12 @@ module.exports = class MockController {
       return
     }
 
-    const project = await checkByProjectId(projectId, uid)
+    // const project = await checkByProjectId(projectId, uid)
 
-    if (typeof project === 'string') {
-      ctx.body = ctx.util.refail(project)
-      return
-    }
+    // if (typeof project === 'string') {
+    //   ctx.body = ctx.util.refail(project)
+    //   return
+    // }
 
     await MockProxy.find({
       _id: {

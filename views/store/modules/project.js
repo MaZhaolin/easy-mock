@@ -4,6 +4,12 @@ export default {
   namespaced: true,
   mutations: {
     SET_LIST (state, payload) {
+      payload = payload.map(project => {
+        project.extend = {
+          is_workbench: true
+        }
+        return project
+      })
       state.list = state.pageIndex === 1
         ? payload
         : state.list.concat(payload)
