@@ -109,14 +109,14 @@ export default {
     }
   },
   asyncData ({ store, route }) {
-    store.commit('project/INIT_REQUEST')
-    store.dispatch('project/INIT_PAGE', route)
-    return store.dispatch('project/FETCH')
+    // store.commit('project/INIT_REQUEST')
+    // store.dispatch('project/INIT_PAGE', route)
+    // return store.dispatch('project/FETCH')
   },
   mounted () {
-    // this.$store.commit('project/INIT_REQUEST')
-    // this.$store.dispatch('project/INIT_PAGE', this.$route)
-    // this.$store.dispatch('project/FETCH')
+    this.$store.commit('project/INIT_REQUEST')
+    this.$store.dispatch('project/INIT_PAGE', this.$route)
+    this.$store.dispatch('project/FETCH')
     this.$on('query', debounce((keywords) => {
       this.$store.dispatch('project/QUERY', keywords)
     }, 500))

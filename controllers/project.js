@@ -4,7 +4,7 @@ const _ = require('lodash')
 const config = require('config')
 
 const util = require('../util')
-// const ft = require('../models/fields_table')
+const ft = require('../models/fields_table')
 const SwaggerUtil = require('../util/swagger')
 const { MockProxy, ProjectProxy, UserProjectProxy, UserGroupProxy } = require('../proxy')
 
@@ -164,15 +164,15 @@ module.exports = class ProjectController {
    */
 
   static async list (ctx) {
-    // const uid = ctx.state.user.id
-    // const group = ctx.query.group
-    // const keywords = ctx.query.keywords
-    // const type = 'all'// ctx.checkQuery('type').empty().toLow().in([ 'workbench' ]).value
+    const uid = ctx.state.user.id
+    const group = ctx.query.group
+    const keywords = ctx.query.keywords
+    const type = ctx.checkQuery('type').empty().toLow().in([ 'workbench' ]).value
     const pageIndex = ctx.checkQuery('page_index').empty().toInt().gt(0).default(1).value
     const pageSize = ctx.checkQuery('page_size').empty().toInt().gt(0).default(defPageSize).value
-    // const filterByAuthor = 0 // ctx.checkQuery('filter_by_author').empty().toInt().default(0).value // 0：全部、1：我创建的、2：我加入的
+    const filterByAuthor = ctx.checkQuery('filter_by_author').empty().toInt().default(0).value // 0：全部、1：我创建的、2：我加入的
 
-    // let projects, baseWhere
+    let projects, baseWhere
 
     if (ctx.errors) {
       ctx.body = ctx.util.refail(null, 10001, ctx.errors)
@@ -185,68 +185,67 @@ module.exports = class ProjectController {
       sort: '-create_at'
     }
 
-    // if (group) {
-    //   const userGroup = await UserGroupProxy.findOne({ user: uid, group: group })
-    //   if (!userGroup) {
-    //     ctx.body = ctx.util.resuccess([])
-    //     return
-    //   }
-    //   baseWhere = [{ group }]
-    // } else {
-    //   if (filterByAuthor === 0) {
-    //     baseWhere = [
-    //       { user: uid },
-    //       { members: { $elemMatch: { $eq: uid } } }
-    //     ]
-    //   } else if (filterByAuthor === 1) {
-    //     baseWhere = [{ user: uid }]
-    //   } else {
-    //     baseWhere = [
-    //       { members: { $elemMatch: { $eq: uid } } }
-    //     ]
-    //   }
-    // }
+    if (group) {
+      const userGroup = await UserGroupProxy.findOne({ user: uid, group: group })
+      if (!userGroup) {
+        ctx.body = ctx.util.resuccess([])
+        return
+      }
+      baseWhere = [{ group }]
+    } else {
+      if (filterByAuthor === 0) {
+        baseWhere = [
+          { user: uid },
+          { members: { $elemMatch: { $eq: uid } } }
+        ]
+      } else if (filterByAuthor === 1) {
+        baseWhere = [{ user: uid }]
+      } else {
+        baseWhere = [
+          { members: { $elemMatch: { $eq: uid } } }
+        ]
+      }
+    }
 
-    // let where = { $or: baseWhere }
+    let where = { $or: baseWhere }
 
-    // if (keywords) {
-    //   const keyExp = new RegExp(keywords, 'i')
-    //   where = {
-    //     $and: [
-    //       { $or: baseWhere },
-    //       {
-    //         $or: [
-    //           { url: keyExp },
-    //           { description: keyExp },
-    //           { name: keyExp }]
-    //       }
-    //     ]
-    //   }
-    // }
+    if (keywords) {
+      const keyExp = new RegExp(keywords, 'i')
+      where = {
+        $and: [
+          { $or: baseWhere },
+          {
+            $or: [
+              { url: keyExp },
+              { description: keyExp },
+              { name: keyExp }]
+          }
+        ]
+      }
+    }
 
-    // switch (type) {
-    //   case 'workbench':
-    //     projects = await UserProjectProxy.find({
-    //       user: uid,
-    //       is_workbench: true
-    //     })
-    //     projects = projects.map(item => item.project)
-    //     projects = await ProjectProxy.find(uid, {
-    //       _id: { $in: projects }
-    //     })
-    //     break
-    //   default:
-    //     projects = await ProjectProxy.find(uid, where, opt)
-    // }
+    switch (type) {
+      case 'workbench':
+        projects = await UserProjectProxy.find({
+          user: uid,
+          is_workbench: true
+        })
+        projects = projects.map(item => item.project)
+        projects = await ProjectProxy.findAll(opt)
+        // projects = await ProjectProxy.find(uid, {
+        //   _id: { $in: projects }
+        // })
+        break
+      default:
+        projects = await ProjectProxy.find(uid, where, opt)
+    }
 
-    // projects = _.map(projects, (item) => {
-    //   item.members = item.members.map(item => _.pick(item, ft.user))
-    //   item.extend = _.pick(item.extend, ft.projectExtend)
-    //   item.user = _.pick(item.user, ft.user)
-    //   return _.pick(item, ['user'].concat(ft.project))
-    // })
-
-    const projects = await ProjectProxy.findAll(opt)
+    projects = _.map(projects, (item) => {
+      item.members = item.members.map(item => _.pick(item, ft.user))
+      item.extend = _.pick(item.extend, ft.projectExtend)
+      item.user = _.pick(item.user, ft.user)
+      return _.pick(item, ['user'].concat(ft.project))
+    })
 
     ctx.body = ctx.util.resuccess(projects)
   }

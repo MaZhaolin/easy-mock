@@ -5,11 +5,12 @@ export default {
   namespaced: true,
   mutations: {
     SET_LIST (state, payload) {
+      console.log(payload)
       payload = payload.filter(project => {
         project.extend = {
           is_workbench: _.isObject(project.group)
         }
-        return _.isObject(project.group)
+        return true // _.isObject(project.group)
       })
       state.list = state.pageIndex === 1
         ? payload

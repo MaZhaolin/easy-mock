@@ -57,7 +57,9 @@ module.exports = class ProjectProxy {
   }
 
   static async findAll (opt) {
-    const projects = await Project.find({}, {}, opt).populate('user members group')
+    const projects = await Project.find({
+      user: {$eq: null}
+    }, {}, opt).populate('user members group')
     return projects
   }
 
