@@ -263,6 +263,7 @@ export default {
         if (res.data.success) {
           this.$Message.success('分组创建成功')
           this.temp.name = ''
+          this.$store.commit('mockGroup/INIT_REQUEST')
           this.$store.dispatch('mockGroup/FETCH', this.$route)
           this.close()
         }
