@@ -11,24 +11,24 @@ const pathToRegexp = require('path-to-regexp')
 
 const util = require('../util')
 const ft = require('../models/fields_table')
-const { MockProxy, ProjectProxy, MockGroupProxy } = require('../proxy')
+const { MockProxy, ProjectProxy } = require('../proxy')
 
 const redis = util.getRedis()
 const defPageSize = config.get('pageSize')
 
-async function checkByMockId (mockId, uid) {
+async function checkByMockId(mockId, uid) {
   const api = await MockProxy.getById(mockId)
 
   if (!api) return '接口不存在'
 
-  const project = await checkByGroupId(api.group.id, uid)
+  const project = await checkByProjectId(api.project.id, uid)
 
   if (typeof project === 'string') return project
   return { api, project }
 }
 
-async function checkByGroupId (groupId, uid) {
-  const project = await MockGroupProxy.findOne({ _id: groupId })
+async function checkByProjectId(groupId, uid) {
+  const project = await ProjectProxy.findOne({ _id: groupId })
 
   if (project) {
     // const group = project.group
@@ -51,22 +51,29 @@ module.exports = class MockController {
    * @param Object ctx
    */
 
-  static async create (ctx) {
+  static async create(ctx) {
     const uid = ctx.state.user.id
     const mode = ctx.checkBody('mode').notEmpty().value
     const params = ctx.checkBody('params').notEmpty().value
     const groupId = ctx.checkBody('group_id').notEmpty().value
     const projectId = ctx.checkBody('project_id').notEmpty().value
     const description = ctx.checkBody('description').notEmpty().value
-    const url = ctx.checkBody('url').notEmpty().match(/^\/.*$/i, 'URL 必须以 / 开头').value
-    const method = ctx.checkBody('method').notEmpty().toLow().in(['get', 'post', 'put', 'delete', 'patch']).value
+    const url = ctx
+      .checkBody('url')
+      .notEmpty()
+      .match(/^\/.*$/i, 'URL 必须以 / 开头').value
+    const method = ctx
+      .checkBody('method')
+      .notEmpty()
+      .toLow()
+      .in(['get', 'post', 'put', 'delete', 'patch']).value
 
     if (ctx.errors) {
       ctx.body = ctx.util.refail(null, 10001, ctx.errors)
       return
     }
 
-    const project = await checkByGroupId(groupId, uid)
+    const project = await checkByProjectId(projectId, uid)
 
     if (typeof project === 'string') {
       ctx.body = ctx.util.refail(project)
@@ -74,7 +81,7 @@ module.exports = class MockController {
     }
 
     const api = await MockProxy.findOne({
-      project: groupId,
+      project: projectId,
       url,
       method
     })
@@ -94,7 +101,7 @@ module.exports = class MockController {
       mode
     })
 
-    await redis.del('group:' + groupId)
+    await redis.del('project:' + projectId)
     ctx.body = ctx.util.resuccess()
   }
 
@@ -103,12 +110,22 @@ module.exports = class MockController {
    * @param Object ctx
    */
 
-  static async list (ctx) {
+  static async list(ctx) {
     const uid = ctx.state.user.id
     const keywords = ctx.query.keywords
     const groupId = ctx.checkQuery('group_id').notEmpty().value
-    const pageSize = ctx.checkQuery('page_size').empty().toInt().gt(0).default(defPageSize).value
-    const pageIndex = ctx.checkQuery('page_index').empty().toInt().gt(0).default(1).value
+    const pageSize = ctx
+      .checkQuery('page_size')
+      .empty()
+      .toInt()
+      .gt(0)
+      .default(defPageSize).value
+    const pageIndex = ctx
+      .checkQuery('page_index')
+      .empty()
+      .toInt()
+      .gt(0)
+      .default(1).value
 
     if (ctx.errors) {
       ctx.body = ctx.util.refail(null, 10001, ctx.errors)
@@ -125,15 +142,20 @@ module.exports = class MockController {
 
     if (keywords) {
       const keyExp = new RegExp(keywords)
-      where.$or = [{
-        url: keyExp
-      }, {
-        description: keyExp
-      }, {
-        method: keyExp
-      }, {
-        mode: keyExp
-      }]
+      where.$or = [
+        {
+          url: keyExp
+        },
+        {
+          description: keyExp
+        },
+        {
+          method: keyExp
+        },
+        {
+          mode: keyExp
+        }
+      ]
     }
 
     let mocks = await MockProxy.find(where, opt)
@@ -158,14 +180,21 @@ module.exports = class MockController {
    * @param Object ctx
    */
 
-  static async update (ctx) {
+  static async update(ctx) {
     const uid = ctx.state.user.id
     const id = ctx.checkBody('id').notEmpty().value
     const params = ctx.checkBody('params').notEmpty().value
     const mode = ctx.checkBody('mode').notEmpty().value
     const description = ctx.checkBody('description').notEmpty().value
-    const url = ctx.checkBody('url').notEmpty().match(/^\/.*$/i, 'URL 必须以 / 开头').value
-    const method = ctx.checkBody('method').notEmpty().toLow().in(['get', 'post', 'put', 'delete', 'patch']).value
+    const url = ctx
+      .checkBody('url')
+      .notEmpty()
+      .match(/^\/.*$/i, 'URL 必须以 / 开头').value
+    const method = ctx
+      .checkBody('method')
+      .notEmpty()
+      .toLow()
+      .in(['get', 'post', 'put', 'delete', 'patch']).value
 
     if (ctx.errors) {
       ctx.body = ctx.util.refail(null, 10001, ctx.errors)
@@ -209,10 +238,11 @@ module.exports = class MockController {
    * @param {*} ctx
    */
 
-  static async getMockAPI (ctx) {
+  static async getMockAPI(ctx) {
     const { query, body } = ctx.request
     const method = ctx.method.toLowerCase()
-    const jsonpCallback = query.jsonp_param_name && (query[query.jsonp_param_name] || 'callback')
+    const jsonpCallback =
+      query.jsonp_param_name && (query[query.jsonp_param_name] || 'callback')
     let { projectId, mockURL } = ctx.pathNode
     const redisKey = 'project:' + projectId
     let apiData, apis, api
@@ -223,21 +253,23 @@ module.exports = class MockController {
       apis = JSON.parse(apis)
     } else {
       apis = await MockProxy.find({ project: projectId })
-      if (apis[0]) await redis.set(redisKey, JSON.stringify(apis), 'EX', 60 * 30)
+      if (apis[0]) {
+        await redis.set(redisKey, JSON.stringify(apis), 'EX', 60 * 30)
+      }
     }
 
     if (apis[0] && apis[0].project.url !== '/') {
       mockURL = mockURL.replace(apis[0].project.url, '') || '/'
     }
 
-    api = apis.filter((item) => {
+    api = apis.filter(item => {
       const url = item.url.replace(/{/g, ':').replace(/}/g, '') // /api/{user}/{id} => /api/:user/:id
       return item.method === method && pathToRegexp(url).test(mockURL)
     })[0]
 
     if (!api) ctx.throw(404)
 
-    Mock.Handler.function = function (options) {
+    Mock.Handler.function = function(options) {
       const mockUrl = api.url.replace(/{/g, ':').replace(/}/g, '') // /api/{user}/{id} => /api/:user/:id
       options.Mock = Mock
       options._req = ctx.request
@@ -246,9 +278,16 @@ module.exports = class MockController {
       return options.template.call(options.context.currentContext, options)
     }
 
-    if (/^http(s)?/.test(api.mode)) { // 代理模式
-      const url = nodeURL.parse(api.mode.replace(/{/g, ':').replace(/}/g, ''), true)
-      const params = util.params(api.url.replace(/{/g, ':').replace(/}/g, ''), mockURL)
+    if (/^http(s)?/.test(api.mode)) {
+      // 代理模式
+      const url = nodeURL.parse(
+        api.mode.replace(/{/g, ':').replace(/}/g, ''),
+        true
+      )
+      const params = util.params(
+        api.url.replace(/{/g, ':').replace(/}/g, ''),
+        mockURL
+      )
       const pathname = pathToRegexp.compile(url.pathname)(params)
       try {
         apiData = await axios({
@@ -277,14 +316,17 @@ module.exports = class MockController {
       apiData = vm.run('Mock.mock(template())') // 解决正则表达式失效的问题
 
       /* istanbul ignore else */
-      if (apiData._res) { // 自定义响应 Code
+      if (apiData._res) {
+        // 自定义响应 Code
         let _res = apiData._res
         ctx.status = _res.status || /* istanbul ignore next */ 200
         /* istanbul ignore else */
         if (_res.cookies) {
           for (let i in _res.cookies) {
             /* istanbul ignore else */
-            if (_res.cookies.hasOwnProperty(i)) ctx.cookies.set(i, _res.cookies[i])
+            if (_res.cookies.hasOwnProperty(i)) {
+              ctx.cookies.set(i, _res.cookies[i])
+            }
           }
         }
         /* istanbul ignore next */
@@ -295,7 +337,9 @@ module.exports = class MockController {
           }
         }
         /* istanbul ignore next */
-        if (_res.status && parseInt(_res.status, 10) !== 200 && _res.data) apiData = _res.data
+        if (_res.status && parseInt(_res.status, 10) !== 200 && _res.data) {
+          apiData = _res.data
+        }
         delete apiData['_res']
       }
     }
@@ -316,7 +360,7 @@ module.exports = class MockController {
    * @param Object ctx
    */
 
-  static async getAPIByProjectIds (ctx) {
+  static async getAPIByProjectIds(ctx) {
     let projectIds = ctx.checkQuery('project_ids').notEmpty().value
 
     if (ctx.errors) {
@@ -336,10 +380,10 @@ module.exports = class MockController {
 
     const result = {}
 
-    projects.forEach((project) => {
+    projects.forEach(project => {
       const projectId = project.id
-      let newMocks = apis.filter(o => (o.project.id === projectId))
-      let newProject = projects.filter(o => (o.id === projectId))[0]
+      let newMocks = apis.filter(o => o.project.id === projectId)
+      let newProject = projects.filter(o => o.id === projectId)[0]
 
       newProject.members = newProject.members.map(o => _.pick(o, ft.user))
       newProject.user = _.pick(newProject.user, ft.user)
@@ -360,9 +404,12 @@ module.exports = class MockController {
    * @param Object ctx
    */
 
-  static async exportAPI (ctx) {
+  static async exportAPI(ctx) {
     const zip = new JSZip()
-    const ids = ctx.checkBody('ids').empty().type('array').value
+    const ids = ctx
+      .checkBody('ids')
+      .empty()
+      .type('array').value
     const projectId = ctx.checkBody('project_id').empty().value
     let apis
 
@@ -389,7 +436,7 @@ module.exports = class MockController {
       return
     }
 
-    apis.forEach((api) => {
+    apis.forEach(api => {
       zip.file(`${api.project.url}${api.url}.json`, api.mode)
     })
 
@@ -404,10 +451,13 @@ module.exports = class MockController {
    * @param Object ctx
    */
 
-  static async delete (ctx) {
+  static async delete(ctx) {
     // const uid = ctx.state.user.id
     const projectId = ctx.checkBody('project_id').notEmpty().value
-    const ids = ctx.checkBody('ids').notEmpty().type('array').value
+    const ids = ctx
+      .checkBody('ids')
+      .notEmpty()
+      .type('array').value
 
     if (ctx.errors) {
       ctx.body = ctx.util.refail(null, 10001, ctx.errors)
@@ -429,7 +479,7 @@ module.exports = class MockController {
     })
 
     await MockProxy.delByIds(ids)
-    await redis.del('project:' + projectId)
+    await redis.del('group:' + projectId)
     ctx.body = ctx.util.resuccess()
   }
 }

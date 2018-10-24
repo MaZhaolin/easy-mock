@@ -1,13 +1,14 @@
 module.exports = {
-  "root": true,
-  "extends": "standard",
-  "parser": "babel-eslint",
-  "env": {
-    "browser": true,
-    "jest": true,
-    "node": true
+  root: true,
+  extends: 'standard',
+  parser: 'babel-eslint',
+  env: {
+    browser: true,
+    jest: true,
+    node: true
   },
-  "plugins": [
-    "html"
-  ]
-};
+  plugins: ['html'],
+  rules: {
+    'space-before-function-paren': 0
+  }
+}

@@ -11,7 +11,9 @@
           <Form label-position="top">
             <Form-item label="Method">
               <i-select v-model="temp.method">
-                <Option v-for="item in methods" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                <Option v-for="item in methods"
+                        :value="item.value"
+                        :key="item.value">{{ item.label }}</Option>
               </i-select>
             </Form-item>
             <Form-item label="URL">
@@ -22,18 +24,34 @@
             <Form-item>
               <template slot="label">
                 请求参数
-              <i-button @click="addParams" type="primary" shape="circle" icon="plus" size="small" style="margin-left: 10px"></i-button>
+                <i-button @click="addParams"
+                          type="primary"
+                          shape="circle"
+                          icon="plus"
+                          size="small"
+                          style="margin-left: 10px"></i-button>
               </template>
-              <i-input v-for="i in temp.params.length" :key="i" v-model="temp.params[i - 1]" placeholder="name:String" style="margin-bottom: 10px"></i-input>
+              <div v-for="i in temp.params.length"
+                   :key="i">
+                <i-input v-model="temp.params[i - 1]"
+                         placeholder="name:String"
+                         style="margin-bottom: 10px; width: 300px;vertical-align: top;margin-right: 10px;"></i-input>
+                <i-button type="error"
+                          @click="temp.params.splice(i - 1, 1)">删除</i-button>
+              </div>
             </Form-item>
             <Form-item :label="$t('p.detail.columns[0]')">
-              <i-input type="textarea" v-model="temp.description"></i-input>
+              <i-input type="textarea"
+                       v-model="temp.description"></i-input>
             </Form-item>
-            <Form-item :label="$t('p.detail.editor.autoClose')" v-if="isEdit">
+            <Form-item :label="$t('p.detail.editor.autoClose')"
+                       v-if="isEdit">
               <i-switch v-model="autoClose"></i-switch>
             </Form-item>
             <Form-item>
-              <Button type="primary" long @click="submit">{{isEdit ? $t('p.detail.editor.action[0]') : $t('p.detail.editor.action[1]')}}</Button>
+              <Button type="primary"
+                      long
+                      @click="submit">{{isEdit ? $t('p.detail.editor.action[0]') : $t('p.detail.editor.action[1]')}}</Button>
             </Form-item>
           </Form>
         </div>
@@ -41,7 +59,8 @@
           <div class="em-proj-detail__switcher">
             <ul>
               <li @click="format">{{$t('p.detail.editor.control[0]')}}</li>
-              <li @click="preview" v-if="isEdit">{{$t('p.detail.editor.control[1]')}}</li>
+              <li @click="preview"
+                  v-if="isEdit">{{$t('p.detail.editor.control[1]')}}</li>
               <li @click="close">{{$t('p.detail.editor.control[2]')}}</li>
             </ul>
           </div>
@@ -71,7 +90,7 @@ if (typeof window !== 'undefined') {
 
 export default {
   name: 'editor',
-  data () {
+  data() {
     return {
       codeEditor: null,
       autoClose: true,
@@ -86,32 +105,31 @@ export default {
         url: '',
         mode: '{"code": 200, "data": {}, "msg": ""}',
         method: 'get',
-        params: [
-          ''
-        ],
+        params: [''],
         description: ''
       }
     }
   },
   computed: {
-    mockData () {
+    mockData() {
       return this.$store.state.mock.editorData.mock
     },
-    baseUrl () {
+    baseUrl() {
       return this.$store.state.mock.editorData.baseUrl
     },
-    projectId () {
+    projectId() {
       return this.$route.params.projectId
     },
-    groupId () {
+    groupId() {
       return this.$route.params.groupId
     },
-    isEdit () {
+    isEdit() {
       return !!this.$route.params.id && this.mockData
     }
   },
-  beforeRouteEnter (to, from, next) {
-    if (from.matched.length === 0) { // 防止编辑页刷新导致的显示异常（直接进入项目主页）
+  beforeRouteEnter(to, from, next) {
+    if (from.matched.length === 0) {
+      // 防止编辑页刷新导致的显示异常（直接进入项目主页）
       return next({
         path: `/project/${to.params.projectId}`,
         replace: true
@@ -119,7 +137,7 @@ export default {
     }
     next()
   },
-  mounted () {
+  mounted() {
     this.codeEditor = ace.edit(this.$refs.codeEditor)
     this.codeEditor.getSession().setMode('ace/mode/javascript')
     this.codeEditor.setTheme('ace/theme/monokai')
@@ -132,7 +150,7 @@ export default {
     this.codeEditor.on('change', this.onChange)
     this.codeEditor.commands.addCommand({
       name: 'save',
-      bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
+      bindKey: { win: 'Ctrl-S', mac: 'Command-S' },
       exec: () => {
         this.submit()
       }
@@ -153,34 +171,34 @@ export default {
     })
   },
   methods: {
-    convertUrl (url) {
+    convertUrl(url) {
       const newUrl = '/' + url
       return newUrl === '/'
         ? '/'
         : newUrl.replace(/\/\//g, '/').replace(/\/$/, '')
     },
-    addParams () {
+    addParams() {
       this.temp.params.push('')
     },
-    format () {
+    format() {
       const context = this.codeEditor.getValue()
       let code = /^http(s)?/.test(context)
         ? context
         : jsBeautify.js_beautify(context, { indent_size: 2 })
       this.codeEditor.setValue(code)
     },
-    onChange () {
+    onChange() {
       this.temp.mode = this.codeEditor.getValue()
     },
-    close () {
-      this.$store.commit('mock/SET_EDITOR_DATA', {mock: null, baseUrl: ''})
+    close() {
+      this.$store.commit('mock/SET_EDITOR_DATA', { mock: null, baseUrl: '' })
       this.$router.replace(`/project/${this.projectId}/${this.groupId}`)
     },
-    submit () {
+    submit() {
       console.log(this.temp.params)
       const mockUrl = this.convertUrl(this.temp.url)
       try {
-        const value = (new Function(`return ${this.temp.mode}`))() // eslint-disable-line
+        const value = new Function(`return ${this.temp.mode}`)() // eslint-disable-line
         if (!value) {
           this.$Message.error(this.$t('p.detail.editor.submit.error[0]'))
           return
@@ -189,42 +207,52 @@ export default {
         }
       } catch (error) {
         if (!/^http(s)?:\/\//.test(this.temp.mode)) {
-          this.$Message.error(error.message || this.$t('p.detail.editor.submit.error[1]'))
+          this.$Message.error(
+            error.message || this.$t('p.detail.editor.submit.error[1]')
+          )
           return
         }
       }
 
       if (this.isEdit) {
-        api.mock.update({
-          data: {
-            ...this.temp,
-            id: this.mockData._id,
-            url: mockUrl
-          }
-        }).then((res) => {
-          if (res.data.success) {
-            this.$Message.success(this.$t('p.detail.editor.submit.updateSuccess'))
-            if (this.autoClose) this.close()
-          }
-        })
+        api.mock
+          .update({
+            data: {
+              ...this.temp,
+              id: this.mockData._id,
+              url: mockUrl
+            }
+          })
+          .then(res => {
+            if (res.data.success) {
+              this.$Message.success(
+                this.$t('p.detail.editor.submit.updateSuccess')
+              )
+              if (this.autoClose) this.close()
+            }
+          })
       } else {
-        api.mock.create({
-          data: {
-            ...this.temp,
-            url: mockUrl,
-            project_id: this.projectId,
-            group_id: this.groupId
-          }
-        }).then((res) => {
-          if (res.data.success) {
-            this.$Message.success(this.$t('p.detail.create.success'))
-            this.close()
-          }
-        })
+        api.mock
+          .create({
+            data: {
+              ...this.temp,
+              url: mockUrl,
+              project_id: this.projectId,
+              group_id: this.groupId
+            }
+          })
+          .then(res => {
+            if (res.data.success) {
+              this.$Message.success(this.$t('p.detail.create.success'))
+              this.close()
+            }
+          })
       }
     },
-    preview () {
-      window.open(this.baseUrl + this.mockData.url + '#!method=' + this.mockData.method)
+    preview() {
+      window.open(
+        this.baseUrl + this.mockData.url + '#!method=' + this.mockData.method
+      )
     }
   }
 }

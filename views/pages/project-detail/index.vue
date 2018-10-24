@@ -1,23 +1,26 @@
 <template>
   <div class="em-proj-detail">
-    <em-header
-      icon="cube"
-      :title="project.name"
-      :description="page.description"
-      :nav="nav"
-      v-model="pageName">
+    <em-header icon="cube"
+               :title="project.name"
+               :description="page.description"
+               :nav="nav"
+               v-model="pageName">
     </em-header>
-    <div v-shortkey="['tab']" @shortkey="handleKeyTab()"></div>
+    <div v-shortkey="['tab']"
+         @shortkey="handleKeyTab()"></div>
     <em-keyboard-short v-model="keyboards"></em-keyboard-short>
     <Back-top>
-      <em-add icon="arrow-up-c" :bottom="90"></em-add>
+      <em-add icon="arrow-up-c"
+              :bottom="90"></em-add>
     </Back-top>
-    <transition name="fade" mode="out-in">
-      <project v-if="pageName === $t('p.detail.nav[1]')" key="a" :project-data="project"></project>
-      <div
-        class="em-container"
-        v-if="pageAnimated && pageName === $t('p.detail.nav[0]')"
-        key="b">
+    <transition name="fade"
+                mode="out-in">
+      <project v-if="pageName === $t('p.detail.nav[1]')"
+               key="a"
+               :project-data="project"></project>
+      <div class="em-container"
+           v-if="pageAnimated && pageName === $t('p.detail.nav[0]')"
+           key="b">
         <!-- <div class="em-proj-detail__info">
           <Row>
             <Col span="19">
@@ -51,32 +54,41 @@
         </div> -->
         <div style="display: inline-block;vertical-align: top;margin-top: 20px;">
           <div style="margin-bottom: 10px">
-            <Input v-model="temp.name" placeholder="分组名" style="width: 184px"/>
-            <Button type="primary" @click="addMockGroup">增加</Button>
+            <Input v-model="temp.name"
+                   placeholder="分组名"
+                   style="width: 184px" />
+            <Button type="primary"
+                    @click="addMockGroup">增加</Button>
           </div>
-          <Menu :active-name="activeGroup" @on-select="onGroupChange">
+          <Menu :active-name="activeGroup"
+                @on-select="onGroupChange">
             <MenuGroup title="接口分组">
-              <MenuItem v-for="(item, index) in groups" :key="index" :name="item._id">{{item.name}}</MenuItem>
+              <MenuItem v-for="(item, index) in groups"
+                        :key="index"
+                        :name="item._id">{{item.name}}</MenuItem>
             </MenuGroup>
           </Menu>
         </div>
         <div style="width: 909px;display:inline-block;margin-left: 10px;margin-top: 20px;">
           <div class="em-proj-detail__switcher">
             <ul>
-              <li @click="openEditor()" v-shortkey="['ctrl', 'n']" @shortkey="openEditor()">
+              <li @click="openEditor()"
+                  v-shortkey="['ctrl', 'n']"
+                  @shortkey="openEditor()">
                 <Icon type="plus-round"></Icon> {{$t('p.detail.create.action')}}
               </li>
             </ul>
           </div>
           <div style="position: relative">
-            <Table
-            border
-            :columns="columns"
-            :data="list"
-            @on-selection-change="selectionChange"
-            :highlight-row="true">
+            <Table border
+                   :columns="columns"
+                   :data="list"
+                   @on-selection-change="selectionChange"
+                   :highlight-row="true">
             </Table>
-            <Spin size="large" fix v-if="loading"></Spin>
+            <Spin size="large"
+                  fix
+                  v-if="loading"></Spin>
           </div>
         </div>
       </div>
@@ -89,6 +101,7 @@
 </style>
 
 <script>
+/* eslint-disable */
 import Clipboard from 'clipboard'
 import debounce from 'lodash/debounce'
 
@@ -98,7 +111,7 @@ import MockExpand from './mock-expand'
 
 export default {
   name: 'projectDetail',
-  data () {
+  data() {
     return {
       pageName: this.$t('p.detail.nav[0]'),
       selection: [],
@@ -112,7 +125,9 @@ export default {
           category: this.$t('p.detail.keyboards[0].category'),
           list: [
             {
-              description: `${this.$t('p.detail.nav[0]')}/${this.$t('p.detail.nav[1]')}`,
+              description: `${this.$t('p.detail.nav[0]')}/${this.$t(
+                'p.detail.nav[1]'
+              )}`,
               shorts: ['tab']
             }
           ]
@@ -120,9 +135,18 @@ export default {
         {
           category: this.$t('p.detail.keyboards[1].category'),
           list: [
-            { description: this.$t('p.detail.keyboards[1].list[0]'), shorts: ['ctrl', 'n'] },
-            { description: this.$t('p.detail.keyboards[1].list[1]'), shorts: ['ctrl', 'w'] },
-            { description: this.$t('p.detail.keyboards[1].list[2]'), shorts: ['ctrl', 's'] }
+            {
+              description: this.$t('p.detail.keyboards[1].list[0]'),
+              shorts: ['ctrl', 'n']
+            },
+            {
+              description: this.$t('p.detail.keyboards[1].list[1]'),
+              shorts: ['ctrl', 'w']
+            },
+            {
+              description: this.$t('p.detail.keyboards[1].list[2]'),
+              shorts: ['ctrl', 's']
+            }
           ]
         }
       ],
@@ -149,7 +173,7 @@ export default {
             { label: 'delete', value: 'delete' },
             { label: 'patch', value: 'patch' }
           ],
-          filterMethod (value, row) {
+          filterMethod(value, row) {
             return row.method.indexOf(value) > -1
           },
           render: (h, params) => {
@@ -160,13 +184,25 @@ export default {
               put: 'yellow',
               patch: 'yellow'
             }
-            return <tag class="method-tag" color={color[params.row.method]}>
-              {params.row.method.toUpperCase()}
-            </tag>
+            return (
+              <tag class="method-tag" color={color[params.row.method]}>
+                {params.row.method.toUpperCase()}
+              </tag>
+            )
           }
         },
-        { title: 'URL', width: 220, ellipsis: true, sortable: true, key: 'url' },
-        { title: this.$t('p.detail.columns[0]'), ellipsis: true, key: 'description' },
+        {
+          title: 'URL',
+          width: 220,
+          ellipsis: true,
+          sortable: true,
+          key: 'url'
+        },
+        {
+          title: this.$t('p.detail.columns[0]'),
+          ellipsis: true,
+          key: 'description'
+        },
         {
           title: this.$t('p.detail.columns[1]'),
           key: 'action',
@@ -176,16 +212,44 @@ export default {
             return (
               <div>
                 <Button-group>
-                  <i-button size="small" title={this.$t('p.detail.action[0]')} onClick={this.preview.bind(this, params.row)}><icon type="eye"></icon></i-button>
-                  <i-button size="small" title={this.$t('p.detail.action[1]')} onClick={this.openEditor.bind(this, params.row)}><icon type="edit"></icon></i-button>
-                  <i-button size="small" title={this.$t('p.detail.action[2]')} class="copy-url" onClick={this.clip.bind(this, params.row.url)}><icon type="link"></icon></i-button>
+                  <i-button
+                    size="small"
+                    title={this.$t('p.detail.action[0]')}
+                    onClick={this.preview.bind(this, params.row)}>
+                    <icon type="eye" />
+                  </i-button>
+                  <i-button
+                    size="small"
+                    title={this.$t('p.detail.action[1]')}
+                    onClick={this.openEditor.bind(this, params.row)}>
+                    <icon type="edit" />
+                  </i-button>
+                  <i-button
+                    size="small"
+                    title={this.$t('p.detail.action[2]')}
+                    class="copy-url"
+                    onClick={this.clip.bind(this, params.row.url)}>
+                    <icon type="link" />
+                  </i-button>
                 </Button-group>
                 <dropdown>
-                  <i-button size="small"><icon type="more"></icon></i-button>
+                  <i-button size="small">
+                    <icon type="more" />
+                  </i-button>
                   <dropdown-menu slot="list">
-                    <dropdown-item nativeOnClick={this.clone.bind(this, params.row)}><icon type="ios-copy"></icon> {this.$t('p.detail.action[3]')}</dropdown-item>
-                    <dropdown-item nativeOnClick={this.download.bind(this, params.row._id)}><icon type="ios-download"></icon> {this.$tc('p.detail.download', 2)}</dropdown-item>
-                    <dropdown-item nativeOnClick={this.remove.bind(this, params.row._id)}><icon type="trash-b"></icon> {this.$t('p.detail.action[4]')}</dropdown-item>
+                    <dropdown-item
+                      nativeOnClick={this.clone.bind(this, params.row)}>
+                      <icon type="ios-copy" /> {this.$t('p.detail.action[3]')}
+                    </dropdown-item>
+                    <dropdown-item
+                      nativeOnClick={this.download.bind(this, params.row._id)}>
+                      <icon type="ios-download" />{' '}
+                      {this.$tc('p.detail.download', 2)}
+                    </dropdown-item>
+                    <dropdown-item
+                      nativeOnClick={this.remove.bind(this, params.row._id)}>
+                      <icon type="trash-b" /> {this.$t('p.detail.action[4]')}
+                    </dropdown-item>
                   </dropdown-menu>
                 </dropdown>
               </div>
@@ -200,76 +264,84 @@ export default {
       activeGroup: ''
     }
   },
-  asyncData ({ store, route }) {
+  asyncData({ store, route }) {
     store.commit('mock/INIT_REQUEST')
     // store.commit('mockGroup/INIT_REQUEST')
-    route.params.groupId ? store.dispatch('mock/FETCH', route.params.groupId) : store.commit('mockGroup/INIT_REQUEST')
+    route.params.groupId
+      ? store.dispatch('mock/FETCH', route.params.groupId)
+      : store.commit('mockGroup/INIT_REQUEST')
     return store.dispatch('mockGroup/FETCH', route)
   },
-  mounted () {
+  mounted() {
     const list = this.$store.state.mockGroup.list
     this.activeGroup = this.$route.params.groupId
     if (list.length > 0 && !this.activeGroup) {
       this.activeGroup = list[0]._id
       this.$store.dispatch('mock/FETCH', this.activeGroup)
     }
-    this.$on('query', debounce((keywords) => {
-      this.keywords = keywords
-    }, 500))
+    this.$on(
+      'query',
+      debounce(keywords => {
+        this.keywords = keywords
+      }, 500)
+    )
   },
   computed: {
-    project () {
+    project() {
       return this.$store.state.mockGroup.project
     },
-    loading () {
+    loading() {
       return this.$store.state.mock.loading
     },
-    groups () {
+    groups() {
       const list = this.$store.state.mockGroup.list
       return list
     },
-    list () {
+    list() {
       const list = this.$store.state.mock.list
       const reg = this.keywords && new RegExp(this.keywords, 'i')
       return reg
-        ? list.filter(item => (
-          reg.test(item.name) || reg.test(item.url) || reg.test(item.method)
-        ))
+        ? list.filter(
+            item =>
+              reg.test(item.name) || reg.test(item.url) || reg.test(item.method)
+          )
         : list
     },
-    page () {
+    page() {
       return {
         description: this.project.user
           ? this.$t('p.detail.header.description[0]')
           : this.$t('p.detail.header.description[1]')
       }
     },
-    baseUrl () {
+    baseUrl() {
       const baseUrl = location.origin + '/mock/' + this.project._id
       return this.project.url === '/' ? baseUrl : baseUrl + this.project.url
     },
-    group () {
+    group() {
       return this.project.group
     }
   },
   methods: {
-    addMockGroup () {
-      api.mockGroup.create({
-        data: {
-          ...this.temp,
-          project_id: this.project._id
-        }
-      }).then((res) => {
-        if (res.data.success) {
-          this.$Message.success('分组创建成功')
-          this.temp.name = ''
-          this.$store.commit('mockGroup/INIT_REQUEST')
-          this.$store.dispatch('mockGroup/FETCH', this.$route)
-          this.close()
-        }
-      })
+    addMockGroup() {
+      api.mockGroup
+        .create({
+          data: {
+            ...this.temp,
+            project_id: this.project._id
+          }
+        })
+        .then(res => {
+          if (res.data.success) {
+            this.$Message.success('分组创建成功')
+            this.temp.name = ''
+            this.$store.commit('mockGroup/INIT_REQUEST')
+            this.$store.dispatch('mockGroup/FETCH', this.$route)
+            this.close()
+          }
+        })
     },
-    onGroupChange (name) {
+    onGroupChange(name) {
       this.$router.push({
         name: 'project',
         params: {
@@ -280,31 +352,34 @@ export default {
       this.activeGroup = name
       // this.$store.dispatch('mock/FETCH', name)
     },
-    handleKeyTab () {
-      this.pageName = this.pageName === this.$t('p.detail.nav[1]')
-        ? this.$t('p.detail.nav[0]')
-        : this.$t('p.detail.nav[1]')
+    handleKeyTab() {
+      this.pageName =
+        this.pageName === this.$t('p.detail.nav[1]')
+          ? this.$t('p.detail.nav[0]')
+          : this.$t('p.detail.nav[1]')
     },
-    clip (mockUrl) {
+    clip(mockUrl) {
       const clipboard = new Clipboard('.copy-url', {
         text: () => {
           return mockUrl
         }
       })
-      clipboard.on('success', (e) => {
+      clipboard.on('success', e => {
         e.clearSelection()
         clipboard.destroy()
         this.$Message.success(this.$t('p.detail.copySuccess'))
       })
     },
-    preview (mock) {
+    preview(mock) {
       let str = mock.params.map(v => v.split(':')[0]).join('=&')
-      window.open(this.baseUrl + mock.url + '?' + str + '#!method=' + mock.method)
+      window.open(
+        this.baseUrl + mock.url + '?' + str + '#!method=' + mock.method
+      )
     },
-    selectionChange (selection) {
+    selectionChange(selection) {
       this.selection = selection
     },
-    download (mockId) {
+    download(mockId) {
       if (typeof mockId === 'string') {
         const ids = this.selection.length
           ? this.selection.map(item => item._id)
@@ -314,7 +389,7 @@ export default {
         api.mock.export(this.project._id)
       }
     },
-    updateBySwagger () {
+    updateBySwagger() {
       if (!this.project.swagger_url) {
         this.$Message.warning(this.$t('p.detail.syncSwagger.warning'))
         return
@@ -323,57 +398,71 @@ export default {
         title: this.$t('confirm.title'),
         content: this.$t('p.detail.syncSwagger.confirm'),
         onOk: () => {
-          api.project.updateSwagger({
-            data: { id: this.project._id }
-          }).then((res) => {
-            if (res.data.success) {
-              this.$Message.success(this.$t('p.detail.syncSwagger.success'))
-              this.$store.commit('mock/SET_REQUEST_PARAMS', {pageIndex: 1})
-              this.$store.dispatch('mock/FETCH', this.$route)
-            }
-            return res
-          })
+          api.project
+            .updateSwagger({
+              data: { id: this.project._id }
+            })
+            .then(res => {
+              if (res.data.success) {
+                this.$Message.success(this.$t('p.detail.syncSwagger.success'))
+                this.$store.commit('mock/SET_REQUEST_PARAMS', { pageIndex: 1 })
+                this.$store.dispatch('mock/FETCH', this.$route)
+              }
+              return res
+            })
         }
       })
     },
-    remove (mockId) {
+    remove(mockId) {
       const ids = this.selection.length
         ? this.selection.map(item => item._id)
         : [mockId]
       this.$Modal.confirm({
         title: this.$t('confirm.title'),
-        content: ids.length > 1 ? this.$t('p.detail.remove.confirm[0]') : this.$t('p.detail.remove.confirm[1]'),
+        content:
+          ids.length > 1
+            ? this.$t('p.detail.remove.confirm[0]')
+            : this.$t('p.detail.remove.confirm[1]'),
         onOk: () => {
-          api.mock.delete({
-            data: { project_id: this.project._id, ids }
-          }).then((res) => {
-            if (res.data.success) {
-              this.$Message.success(this.$t('p.detail.remove.success'))
-              this.$store.commit('mock/SET_REQUEST_PARAMS', { pageIndex: 1 })
-              this.$store.dispatch('mock/FETCH', this.$route)
-            }
-          })
+          api.mock
+            .delete({
+              data: { project_id: this.project._id, ids }
+            })
+            .then(res => {
+              if (res.data.success) {
+                this.$Message.success(this.$t('p.detail.remove.success'))
+                this.$store.commit('mock/SET_REQUEST_PARAMS', { pageIndex: 1 })
+                this.$store.dispatch('mock/FETCH', this.$route.params.groupId)
+              }
+            })
         }
       })
     },
-    handleWorkbench () {
+    handleWorkbench() {
       this.$store.dispatch('project/WORKBENCH', this.project.extend)
     },
-    clone (mock) {
-      this.$store.dispatch('mock/CREATE', {
-        route: this.$route,
-        ...mock,
-        url: `${mock.url}_copy_${new Date().getTime()}`
-      }).then(res => {
-        if (res.data.success) {
-          this.$Message.success(this.$t('p.detail.create.success'))
-        }
-      })
+    clone(mock) {
+      this.$store
+        .dispatch('mock/CREATE', {
+          route: this.$route,
+          ...mock,
+          url: `${mock.url}_copy_${new Date().getTime()}`
+        })
+        .then(res => {
+          if (res.data.success) {
+            this.$Message.success(this.$t('p.detail.create.success'))
+          }
+        })
     },
-    openEditor (mock) {
+    openEditor(mock) {
       if (mock) {
-        this.$store.commit('mock/SET_EDITOR_DATA', {mock, baseUrl: this.baseUrl})
-        this.$router.push(`/editor/${this.project._id}/${this.activeGroup}/${mock._id}`)
+        this.$store.commit('mock/SET_EDITOR_DATA', {
+          mock,
+          baseUrl: this.baseUrl
+        })
+        this.$router.push(
+          `/editor/${this.project._id}/${this.activeGroup}/${mock._id}`
+        )
       } else {
         this.$router.push(`/editor/${this.project._id}/${this.activeGroup}`)
       }
