@@ -93,6 +93,16 @@
         </div>
       </div>
     </transition>
+    <Modal v-model="invisible"
+           title="选择移动到的分组"
+           @on-ok="moveHandle">
+      <Select v-model="select"
+              style="width:200px">
+        <Option v-for="item in groups"
+                :value="item._id"
+                :key="item._id">{{ item.name }}</Option>
+      </Select>
+    </Modal>
   </div>
 </template>
 
@@ -116,6 +126,9 @@ export default {
       pageName: this.$t('p.detail.nav[0]'),
       selection: [],
       keywords: '',
+      invisible: false,
+      select: '',
+      selectMock: {},
       nav: [
         { title: this.$t('p.detail.nav[0]'), icon: 'android-list' },
         { title: this.$t('p.detail.nav[1]'), icon: 'gear-a' }
@@ -249,6 +262,10 @@ export default {
                     <dropdown-item
                       nativeOnClick={this.remove.bind(this, params.row._id)}>
                       <icon type="trash-b" /> {this.$t('p.detail.action[4]')}
+                    </dropdown-item>
+                    <dropdown-item
+                      nativeOnClick={this.move.bind(this, params.row)}>
+                      <icon type="paper-airplane" /> 移动
                     </dropdown-item>
                   </dropdown-menu>
                 </dropdown>
@@ -437,6 +454,25 @@ export default {
             })
         }
       })
+    },
+    move(mock) {
+      this.selectMock = mock
+      this.invisible = true
+    },
+    moveHandle() {
+      api.mock
+        .update({
+          data: {
+            ...this.selectMock,
+            id: this.selectMock._id,
+            group_id: this.select
+          }
+        })
+        .then(res => {
+          this.$Message.success('移动成功')
+          this.$store.commit('mock/SET_REQUEST_PARAMS', { pageIndex: 1 })
+          this.$store.dispatch('mock/FETCH', this.$route.params.groupId)
+        })
     },
     handleWorkbench() {
       this.$store.dispatch('project/WORKBENCH', this.project.extend)

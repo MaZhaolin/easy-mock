@@ -183,6 +183,7 @@ module.exports = class MockController {
   static async update(ctx) {
     const uid = ctx.state.user.id
     const id = ctx.checkBody('id').notEmpty().value
+    const groupId = ctx.checkBody('group_id').notEmpty().value
     const params = ctx.checkBody('params').notEmpty().value
     const mode = ctx.checkBody('mode').notEmpty().value
     const description = ctx.checkBody('description').notEmpty().value
@@ -215,6 +216,7 @@ module.exports = class MockController {
     api.method = method
     api.description = description
     api.params = params
+    api.group_id = groupId
 
     const existMock = await MockProxy.findOne({
       _id: { $ne: api.id },
