@@ -220,6 +220,7 @@ export default {
             data: {
               ...this.temp,
               id: this.mockData._id,
+              group_id: this.groupId,
               url: mockUrl
             }
           })
